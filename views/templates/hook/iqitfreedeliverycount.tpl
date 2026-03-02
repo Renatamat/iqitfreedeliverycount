@@ -23,7 +23,7 @@
   {* Pasek postępu *}
   <div class="iqitfreedeliverycount-wrapper mb-6 mt-6" data-remaining="{$free_ship_remaining}"
      data-threshold="{$free_ship_from}" data-prev-pct="0">
-      <p> Darmowa dostawa <strong>od {$free_ship_from}</strong></p>
+      <p>{l s='Free delivery from' mod='iqitfreedeliverycount'} <strong>{$free_ship_from}</strong></p>
       <div class="ifdc-progress-bar" >
             <div class="ifdc-progress">
               <div class="ifdc-track"></div>
@@ -32,7 +32,7 @@
               <div class="ifdc-badge" aria-hidden="true" >
                 <div class="ifdc-badge-circle d-flex ">
                     <span class="d-flex flex-column">
-                        {l s="Brakuje"}
+                        {l s='Remaining' mod='iqitfreedeliverycount'}
                         <strong> {$free_ship_remaining}</strong>
                     </span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
