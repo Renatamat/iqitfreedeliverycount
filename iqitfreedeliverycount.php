@@ -829,6 +829,16 @@ class IqitFreeDeliveryCount extends Module implements WidgetInterface
 
 
 
+        $zoneId = (int) Address::getZoneById($addressId);
+
+        if ($zoneId) {
+
+            return $zoneId;
+
+        }
+
+
+
         $address = new Address($addressId);
 
         if (!Validate::isLoadedObject($address)) {
@@ -839,7 +849,35 @@ class IqitFreeDeliveryCount extends Module implements WidgetInterface
 
 
 
-        return (int) $address->id_zone;
+        if (!empty($address->id_state)) {
+
+            $state = new State((int) $address->id_state);
+
+            if (Validate::isLoadedObject($state) && isset($state->id_zone)) {
+
+                return (int) $state->id_zone;
+
+            }
+
+        }
+
+
+
+        if (!empty($address->id_country)) {
+
+            $country = new Country((int) $address->id_country);
+
+            if (Validate::isLoadedObject($country) && isset($country->id_zone)) {
+
+                return (int) $country->id_zone;
+
+            }
+
+        }
+
+
+
+        return 0;
 
     }
 
