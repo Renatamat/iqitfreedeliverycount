@@ -9,8 +9,9 @@
   function recalcWrap(wrapper) {
     const fill  = wrapper.querySelector('.ifdc-fill');
     const badge = wrapper.querySelector('.ifdc-badge');
+    const progressBar = wrapper.querySelector('.ifdc-progress');
     const priceEl = wrapper.querySelector('.ifdc-remaining-price');
-    if (!fill || !badge) return;
+    if (!fill || !badge || !progressBar) return;
 
     let remaining = parseMoney(wrapper.getAttribute('data-remaining'));
     let threshold = parseMoney(wrapper.getAttribute('data-threshold'));
@@ -26,7 +27,14 @@
     let progress = (threshold - remaining) / threshold;
     progress = Math.max(0, Math.min(1, progress));
     const pct = progress * 100;
-    const edgePad = 1.5;
+
+    // Dynamiczny margines zależny od szerokości badge, żeby nie wychodził poza pasek.
+    const barWidth = progressBar.offsetWidth;
+    const badgeHalf = badge.offsetWidth / 2;
+    let edgePad = 1.5;
+    if (barWidth > 0 && badgeHalf > 0) {
+      edgePad = Math.min(49.5, (badgeHalf / barWidth) * 100);
+    }
     const targetSafe = Math.max(edgePad, Math.min(100 - edgePad, pct));
 
     // poprzednia pozycja z data-prev-pct
@@ -67,6 +75,11 @@
       $(document).on('updatedCart', function () {
         setTimeout(recalcAll, 80);
       });
+
+      // wspiera moduł koszyka wysuwanego (offcanvas/sidebar)
+      $(document).on('shown.bs.modal shown.bs.collapse shown.bs.offcanvas', function () {
+        setTimeout(recalcAll, 80);
+      });
     }
 
     // fallback dla kliknięć w koszyku
@@ -76,5 +89,31 @@
       const rmv = e.target.closest('.cart__remove, .remove-from-cart');
       if (inc || dec || rmv) setTimeout(recalcAll, 400);
     });
+
+    // Recalc po dynamicznym podmianiu DOM (np. moduł w wysuwanym koszyku).
+    if (typeof MutationObserver !== 'undefined') {
+      const observer = new MutationObserver(function (mutations) {
+        let shouldRecalc = false;
+        mutations.forEach(function (mutation) {
+          if (mutation.type === 'childList' && mutation.addedNodes.length) {
+            mutation.addedNodes.forEach(function (node) {
+              if (node.nodeType !== 1 || shouldRecalc) return;
+              if (
+                (node.matches && node.matches('.iqitfreedeliverycount-wrapper')) ||
+                (node.querySelector && node.querySelector('.iqitfreedeliverycount-wrapper'))
+              ) {
+                shouldRecalc = true;
+              }
+            });
+          }
+        });
+
+        if (shouldRecalc) {
+          setTimeout(recalcAll, 80);
+        }
+      });
+
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
   });
 })();
